@@ -1,9 +1,8 @@
-import { GoogleGenAI } from '@google/genai';
+import { GoogleGenerativeAI } from '@google/generative-ai';
 
-const ai = new GoogleGenAI({ apiKey: process.env.GEMINI_API_KEY });
+const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY || '');
 
 export default async function handler(req, res) {
-  // Получаем текст от Nightbot
   const prompt = req.query.prompt;
 
   if (!prompt) {
@@ -11,20 +10,19 @@ export default async function handler(req, res) {
   }
 
   try {
-    // Отправляем запрос в бесплатный Gemini
-    const response = await ai.models.generateContent({
-      model: 'gemini-2.5-flash',
-      contents: prompt,
-      config: {
-        // Строгая инструкция, чтобы уложиться в лимит длины Nightbot
-        systemInstruction: 'Ты короткий бот для чата на стриме. Отвечай максимально кратко (не более 200 символов), с юмором и без лишних форматирований.',
-        maxOutputTokens: 100, // Ограничение длины для быстрого ответа (укладываемся в 5 секунд)
+    const model = genAI.getGenerativeModel({
+      model: 'gemini-1.5-flash',
+      systemInstruction: 'Ты короткий бот для чата на стриме. Отвечай максимально кратко (до 200 символов), с юмором, без списков и без оформления.',
+    });
+
+    const result = await model.generateContent({
+      contents: [{ role: 'user', parts: [{ text: prompt }] }],
+      generationConfig: {
+        maxOutputTokens: 100,
       },
     });
 
-    const text = response.text || 'Нейросеть молчит...';
-
-    // Возвращаем чистый текст для Найтбота
+    const text = result.response.text();
     return res.status(200).send(text.trim());
   } catch (error) {
     return res.status(200).send('Ошибка при обращении к ИИ.');
