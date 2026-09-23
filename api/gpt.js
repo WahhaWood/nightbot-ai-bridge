@@ -13,28 +13,33 @@ export default async function handler(req, res) {
   }
 
   try {
-    const completion = await openai.chat.completions.create({
-      model: 'poolside/laguna-xs-2.1',
-      messages: [
-        {
-          role: 'system',
-          content:
-            'Ты короткий бот для Twitch-чата. Отвечай максимально кратко, до 350 символов, без списков и оформления.'
-        },
-        { role: 'user', content: prompt }
-      ],
-      temperature: 1,
-      top_p: 0.95,
-      max_tokens: 300,
-      stream: false
-    });
+    const completion = await Promise.race([
+      openai.chat.completions.create({
+        model: 'nvidia/nvidia-nemotron-nano-9b-v2',
+        messages: [
+          {
+            role: 'system',
+            content:
+              'detailed thinking off\nТы короткий бот для Twitch-чата. Отвечай максимально кратко, до 350 символов, без списков и оформления.'
+          },
+          { role: 'user', content: prompt }
+        ],
+        temperature: 0.7,
+        top_p: 0.95,
+        max_tokens: 150,
+        stream: false
+      }),
+      new Promise((_, reject) =>
+        setTimeout(() => reject(new Error('Timeout after 4.5s')), 4500)
+      )
+    ]);
 
     const text = completion.choices[0]?.message?.content?.trim();
-    const safeText = text ? text.slice(0, 350) : 'Ошибка ИИ.';
+    const safeText = text ? text.slice(0, 350) : 'Пустой ответ от модели.';
 
     return res.status(200).send(safeText);
   } catch (error) {
-    console.error(error);
+    console.error('Handler error:', error.message);
     return res.status(200).send('Ошибка ИИ.');
   }
 }
