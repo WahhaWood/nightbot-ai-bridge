@@ -13,7 +13,7 @@ export default async function handler(req, res) {
     const model = genAI.getGenerativeModel({
       model: 'gemini-3.5-flash-lite',
       systemInstruction:
-        'Ты короткий бот для Twitch-чата. Отвечай максимально кратко, до 399 символов, без списков и оформления.'
+        'Ты короткий бот для Twitch-чата. Отвечай максимально кратко, до 350 символов, без списков и оформления.'
     });
 
     const result = await model.generateContent(prompt);
