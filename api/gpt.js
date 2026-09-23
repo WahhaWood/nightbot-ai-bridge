@@ -14,7 +14,7 @@ export default async function handler(req, res) {
         'X-Title': 'Twitch AI Bot'
       },
       body: JSON.stringify({
-        model: 'inclusionai/ling-3.0-flash-vl:free', // роутер сам выберет быструю бесплатную модель
+        model: 'thinkingmachines/inkling-small:free', // роутер сам выберет быструю бесплатную модель
         messages: [
           {
             role: 'system',
