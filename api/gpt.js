@@ -14,7 +14,7 @@ export default async function handler(req, res) {
         'X-Title': 'Twitch AI Bot'
       },
       body: JSON.stringify({
-        model: 'thinkingmachines/inkling-small:free', // роутер сам выберет быструю бесплатную модель
+        model: 'z-ai/glm-5.2:free',
         messages: [
           {
             role: 'system',
@@ -30,15 +30,17 @@ export default async function handler(req, res) {
     if (!response.ok) {
       const errText = await response.text();
       console.error('OpenRouter error:', response.status, errText);
-      return res.status(200).send('Ошибка ИИ.');
+      // ВРЕМЕННО для теста — выводим саму ошибку в чат
+      return res.status(200).send(`Ошибка ${response.status}: ${errText.slice(0, 300)}`);
     }
 
     const data = await response.json();
     const text = data.choices?.[0]?.message?.content?.trim();
 
-    return res.status(200).send(text || 'Ошибка ИИ.');
+    return res.status(200).send(text || 'Пустой ответ от модели.');
   } catch (error) {
     console.error(error);
-    return res.status(200).send('Ошибка ИИ.');
+    // ВРЕМЕННО для теста
+    return res.status(200).send(`Ошибка: ${error.message}`);
   }
 }
